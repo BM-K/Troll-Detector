@@ -20,6 +20,7 @@ def set_args() -> argparse:
     parser.add_argument('--warmup_step', type=float, default=0.2)
     parser.add_argument('--train_', type=str, default='True')
     parser.add_argument('--test_', type=str, default='True')
+    parser.add_argument('--inference', type=str, default='True')
     parser.add_argument('--fp16', type=str, default='True')
     parser.add_argument('--train_data', type=str, default='train_data.txt')
     parser.add_argument('--test_data', type=str, default='test_data.txt')

@@ -5,6 +5,33 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def move_to_device(sample, device):
+    if len(sample) == 0:
+        return {}
+
+    def _move_to_device(maybe_tensor, device):
+        if torch.is_tensor(maybe_tensor):
+            return maybe_tensor.to(device)
+        elif isinstance(maybe_tensor, dict):
+            return {
+                key: _move_to_device(value, device)
+                for key, value in maybe_tensor.items()
+            }
+        elif isinstance(maybe_tensor, list):
+            return [_move_to_device(x, device) for x in maybe_tensor]
+        elif isinstance(maybe_tensor, tuple):
+            return [_move_to_device(x, device) for x in maybe_tensor]
+        else:
+            return maybe_tensor
+
+    return _move_to_device(sample, device)
+
+
+def get_lr(optimizer):
+    for param_group in optimizer.param_groups:
+        return param_group['lr']
+
+
 def cal_acc(yhat: 'model_output', y: 'label', padding_idx) -> Tensor:
     with torch.no_grad():
         yhat = yhat.max(dim=-1)[1] # [0]: max value, [1]: index of max value

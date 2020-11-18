@@ -3,11 +3,16 @@ import torch
 from apex import amp
 import torch.nn as nn
 from torch import Tensor
+from generation import inference
 from data_loader import load_data
+from tensorboardX import SummaryWriter
 from troll_detector.model.troll_classifier import BERTClassifier
 from troll_detector.setting import set_args, set_logger, set_seed, print_args
 from troll_detector.model.model_options import get_loss_func, get_optim, get_scheduler
-from troll_detector.utils import cal_acc, epoch_time, get_segment_ids_vaild_len, gen_attention_mask, do_well_train
+from troll_detector.utils import get_lr, cal_acc, epoch_time, get_segment_ids_vaild_len, gen_attention_mask, do_well_train
+
+iteration = 0
+summary = SummaryWriter()
 
 
 def system_setting():
@@ -17,14 +22,10 @@ def system_setting():
     return args
 
 
-iteration = 0
-
-
 def train(model: nn.Module, iterator, optimizer, criterion, scheduler, args, vocab: 'KoBERT Vocab') -> (Tensor, Tensor):
     total_loss = 0
     iter_num = 0
     train_acc = 0
-    global iteration
 
     model.train()
     for step, batch in enumerate(iterator):
@@ -58,11 +59,6 @@ def train(model: nn.Module, iterator, optimizer, criterion, scheduler, args, voc
             tr_acc = cal_acc(outputs, target_label, vocab.token_to_idx[vocab.padding_token])
         train_acc += tr_acc
 
-        #if step % 2 == 0:
-        #    total_train_loss.append(total_loss.data.cpu().numpy() / iter_num)
-        #    iteration_list.append(iteration)
-        #    iteration += 1
-
     return total_loss.data.cpu().numpy() / iter_num, train_acc.data.cpu().numpy() / iter_num
 
 
@@ -70,6 +66,7 @@ def valid(model: nn.Module, iterator, criterion, args, vocab: 'KoBERT Vocab') ->
     total_loss = 0
     iter_num = 0
     test_acc = 0
+    global iteration
 
     model.eval()
     with torch.no_grad():
@@ -96,6 +93,10 @@ def valid(model: nn.Module, iterator, criterion, args, vocab: 'KoBERT Vocab') ->
             with torch.no_grad():
                 tr_acc = cal_acc(outputs, target_label, vocab.token_to_idx[vocab.padding_token])
             test_acc += tr_acc
+
+            if iteration % 10 == 0:
+                summary.add_scalar('loss/val_loss', loss.item()/iter_num, iteration)
+            else : iteration += 1
 
     return total_loss.data.cpu().numpy() / iter_num, test_acc.data.cpu().numpy() / iter_num
 
@@ -155,7 +156,7 @@ def main() -> None:
 
     early_stop_check = 0
     best_valid_loss = float('inf')
-    sorted_path = f'{args.path_to_sorted}/result.pt'
+    sorted_path = args.path_to_sorted+'/result.pt'
 
     if args.train_ == 'True':
         logger.info('Start Training')
@@ -182,9 +183,10 @@ def main() -> None:
                 print(f'\n\t## SAVE valid_loss: {valid_loss:.3f} | valid_acc: {valid_acc:.3f} ##')
             else : early_stop_check += 1
 
-            print(f'\n\t==Epoch: {epoch + 1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s==')
+            print(f'\t==Epoch: {epoch + 1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s==')
             print(f'\t==Train Loss: {train_loss:.3f} | Train acc: {train_acc:.3f}==')
-            print(f'\t==Valid Loss: {valid_loss:.3f} | Valid acc: {valid_acc:.3f}==\n')
+            print(f'\t==Valid Loss: {valid_loss:.3f} | Valid acc: {valid_acc:.3f}==')
+            print(f'\t==Epoch latest LR: {get_lr(optimizer):.9f}==\n')
 
     if args.test_ == 'True':
         model = BERTClassifier(bert_model,
@@ -196,13 +198,21 @@ def main() -> None:
 
         if args.fp16 == 'True':
             model, optimizer = amp.initialize(model, optimizer, opt_level=args.opt_level)
-        model.load_state_dict(torch.load(sorted_path))
+        model.load_state_dict(torch.load(args.path_to_sorted))
 
         test_loss, test_acc = test(
             model, test_loader, criterion, args, vocab)
         print(f'\n\t==Test loss: {test_loss:.3f} | Test acc: {test_acc:.3f}==\n')
 
-        exit()
+    if args.inference == 'True':
+        logger.info("Start Inference")
+        optimizer = get_optim(args, model)
+        if args.fp16 == 'True': model, optimizer = amp.initialize(model, optimizer, opt_level=args.opt_level)
+        model.load_state_dict(torch.load(sorted_path))
+        model.eval()
+
+        while(1):
+            inference(args, model, vocab, bert_tokenizer)
 
 
 if __name__ == '__main__':
