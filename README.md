@@ -20,6 +20,7 @@ python train_main.py
   --epochs 10
   --patience 5
   --lr 0.0001
+  --warmup_step 0.2
   --train_ True
   --test_ True
   --inference True
