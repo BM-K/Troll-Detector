@@ -28,7 +28,7 @@ python train_main.py
   --path_to_sorted ./output
 ```
 
-하이퍼 파라미터는 위와 같이 튜닝 하였고, **88.2%** Accuracy를 얻었습니다. <br>
+하이퍼 파라미터는 위와 같이 튜닝 하였고, **88.2% Accuracy**를 얻었습니다. <br>
 학습이 완료 되어 inference만 수행 시 train_, test_ 를 False로 inference 는 True로 설정해 사용할 수 있습니다.
 
 ## Data Split
