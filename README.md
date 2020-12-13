@@ -49,3 +49,6 @@ python train_main.py
 ```
 
 <img src = 'https://user-images.githubusercontent.com/55969260/99531889-c472b200-29e6-11eb-83e5-f657d91b6224.gif'>
+
+to do 
+- pruning
