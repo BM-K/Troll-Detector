@@ -11,7 +11,7 @@ pip install -r requirements.txt
 pip install .
 ```
 
-## Train Models
+## Training Models & hyperparameters
 ```
 python train_main.py
   --drop_rate 0.1
