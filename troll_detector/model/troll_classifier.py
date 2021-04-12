@@ -9,10 +9,9 @@ class BERTClassifier(nn.Module):
         self.dr_rate = dr_rate
         self.classifier = nn.Linear(hidden_size, num_classes)
         self.dropout = nn.Dropout(p=dr_rate)
-        self.softmax = nn.Softmax(dim=-1)
 
     def forward(self, token_ids, segment_ids, attention_mask):
         _, pooler = self.bert(input_ids=token_ids,
                               token_type_ids=segment_ids.long(),
                               attention_mask=attention_mask.float().to(token_ids.device))
-        return self.softmax(self.classifier(self.dropout(pooler)))
+        return self.classifier(self.dropout(pooler))
