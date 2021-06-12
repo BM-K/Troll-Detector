@@ -1,6 +1,10 @@
 # Troll Detector (악플 분류기)
-https://github.com/ZIZUN/korean-malicious-comments-dataset 한국어 악성댓글 데이터셋 <br>
-https://github.com/SKTBrain/KoBERT SKT-Brain KoBERT
+- Model
+  - SKT-Brain KoBERT
+    - https://github.com/SKTBrain/KoBERT
+- Data
+  - 한국어 악성댓글 데이터셋
+    - https://github.com/ZIZUN/korean-malicious-comments-dataset
 
 ## Installation
 ```
