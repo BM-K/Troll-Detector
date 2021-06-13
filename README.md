@@ -18,19 +18,19 @@ pip install .
 
 ## Training Models & hyperparameters
 ```
-python train_main.py
-  --drop_rate 0.1
-  --max_len 64
-  --batch_size : 256
-  --epochs 10
-  --patience 5
-  --lr 0.0001
-  --warmup_step 0.2
-  --train_ True
-  --test_ True
-  --inference True
-  --path_to_data ./data
-  --path_to_sorted ./output
+python train_main.py \
+  --drop_rate 0.1 \
+  --max_len 64 \
+  --batch_size 256 \
+  --epochs 10 \
+  --patience 5 \
+  --lr 0.0001 \
+  --warmup_step 0.2 \
+  --train_ True \
+  --test_ True \
+  --inference True \
+  --path_to_data ./data \
+  --path_to_sorted ./output \
 ```
 
 하이퍼 파라미터는 위와 같이 튜닝 하였고, **88.2% Accuracy**를 얻었습니다. <br>
