@@ -46,7 +46,7 @@ def train(model: nn.Module, iterator, optimizer, criterion, scheduler, args, voc
         outputs = model(input_sentence, segment_ids, attention_mask)
         loss = criterion(outputs, target_label)
 
-        if args.fp16:
+        if args.fp16 == 'True':
             with amp.scale_loss(loss, optimizer) as scaled_loss : scaled_loss.backward()
         else : loss.backward()
 
@@ -150,7 +150,7 @@ def main() -> None:
     optimizer = get_optim(args, model)
     scheduler = get_scheduler(optimizer, args, train_loader)
 
-    if args.fp16:
+    if args.fp16 == 'True':
         logger.info('Use Automatic Mixed Precision (AMP)')
         model, optimizer = amp.initialize(model, optimizer, opt_level=args.opt_level)
 
